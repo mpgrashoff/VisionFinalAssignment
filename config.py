@@ -20,8 +20,8 @@ OVERLAP = 10
 
 # Training parameters
 EPOCHS = 300
-BATCH_SIZE = 64
-PATIENCE = 25
+BATCH_SIZE = 32
+PATIENCE = 80
 FOLDS = 15
 
 # visualising parameters

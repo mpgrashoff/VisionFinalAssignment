@@ -1,10 +1,10 @@
-from config import *
 from data_loader import load_data_from_influx
 from preprocessor import *
 from trainer import *
 from visualizer import *
 import pandas as pd
-import os, tensorflow as tf
+import os
+import tensorflow as tf
 
 
 def main():
