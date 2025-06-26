@@ -85,6 +85,7 @@ def generate_stft_features(raw_data):
     for i in range(SENSOR_COUNT):
         signal = rssi_data[i, :]
         # signal = 10 ** (signal/10)  # reconstruct the log scale signal for a more accurate real world representation
+        # also maybe the worst line of code i have ever written ^^ this function made everything not work and i did not realise for way to long
         spec = compute_stft(signal)
         spectrograms.append(spec)
     # Stack as image channels: shape → (freq_bins, time_bins, 3)

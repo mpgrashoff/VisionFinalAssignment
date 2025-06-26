@@ -44,7 +44,7 @@ def main():
     full_spec = generate_stft_features(raw_data)
 
     for i in range(SENSOR_COUNT):
-        plot_spectrogram(full_spec, validation_data, max_freq_bin=46,
+        plot_spectrogram(full_spec, validation_data, max_freq_bin=8,
                          time_start=PLOT_START_TIME, time_end=PLOT_END_TIME, sensor_index=i)
 
     labels = generate_frame_labels(validation_data)
