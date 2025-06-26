@@ -1,0 +1,124 @@
+Time‑series classification—and in particular presence‑detection from RSSI curves—is a rich area with two broad paths:
+
+1. **Sequence‐modeling architectures** (RNNs, LSTMs/GRUs, Transformers, TCNs) that directly consume your 1D time series
+2. **Transform‐based / feature‐extraction approaches** (STFT, wavelets, hand‑crafted features, TSFRESH) followed by 2D‑CNN or classic classifiers (RF, SVM)
+
+Below, I’ll walk through the key concepts, pros/cons, and what tends to work best for sensor‑based presence detection.
+
+---
+
+## 1. Sequence‑modeling Architectures
+
+### ▶ RNNs / LSTMs / GRUs
+
+* **How they work**
+  Process time steps one at a time (or bidirectionally), maintaining a hidden “memory” state.
+* **Pros**
+  • Naturally capture temporal dependencies (e.g. the gradual ramp‑up when someone enters)
+  • Easy to implement in Keras/TensorFlow
+* **Cons**
+  • Can be slow to train on long sequences (120 time‑steps isn’t huge, but deeper stacks add cost)
+  • Vanishing‑gradient issues (mitigated by LSTM/GRU gating)
+* **When to choose**
+  You have relatively long sequences (100+ time steps), and need to model fine‑grained temporal dynamics.
+
+### ▶ Temporal Convolutional Networks (TCNs) & 1D‑CNNs
+
+* **How they work**
+  1D convolutions slide filters over time, capturing local patterns (e.g. a dip/rise in RSSI) and stacking layers to grow receptive field.
+* **Pros**
+  • Fast to train (fully convolutional, highly parallel)
+  • Often give equal‑or‑better results vs. RNNs on many time‑series benchmarks
+  • Simpler to tune (kernel sizes, dilation rates)
+* **Cons**
+  • You need to pick kernel sizes and dilation schemes carefully to cover your 120‑step window
+* **When to choose**
+  You want a quick, scalable model that still captures temporal context.
+
+### ▶ Transformer‑style Models
+
+* **How they work**
+  Self‑attention layers weigh every time step against every other, learning which moments matter.
+* **Pros**
+  • Excellent at modeling long‑range dependencies
+  • Highly parallelizable
+* **Cons**
+  • Data‑hungry (tend to need lots of training examples)
+  • Heavier compute/memory
+* **When to choose**
+  You have a large labeled dataset (thousands of examples) and need to capture subtle, long‑distance temporal cues.
+
+---
+
+## 2. Transform‑Based / Feature‑Extraction Approaches
+
+### ▶ STFT / Spectrogram + 2D‑CNN
+
+* **Idea**
+  Convert each 120‑sample RSSI trace into a time‑frequency image (e.g. using a short‑time Fourier transform), then apply a standard 2D‑CNN.
+* **Pros**
+  • Leverages mature 2D vision models (ResNets, MobileNets)
+  • Can highlight periodicities or oscillations in the signal
+* **Cons**
+  • You lose some time‑domain resolution (depends on window length)
+  • Extra preprocessing step and hyperparameters (window size, overlap)
+* **When to choose**
+  If your signals have strong frequency components (e.g. periodic movements) that a CNN can more easily pick up in the spectrogram domain.
+
+### ▶ Wavelet Transforms
+
+* Similar to STFT but with variable time/frequency resolution—good for transient events (like “entering” spikes).
+
+### ▶ Hand‑Crafted / Automated Features (TSFRESH, Catch22, etc.)
+
+* **Idea**
+  Compute dozens or hundreds of statistical features per sequence: means, variances, autocorrelations, entropy, peak counts, etc.
+* **Pros**
+  • Often works well with classical classifiers (Random Forests, SVM)
+  • Provides interpretability: you can see which features (e.g. “number of peaks in last 30 s”) matter most
+* **Cons**
+  • Requires feature‑engineering effort and can blow up dimensionality
+  • May miss nuanced patterns only a deep net could learn
+* **When to choose**
+  When you have limited data but want a quick baseline or need explainable features.
+
+---
+
+## 3. What’s Likely Best for Your RSSI‑Based Presence Detection?
+
+1. **Start simple with a 1D‑CNN or TCN**
+
+   * Input: `(120, 3)`
+   * A couple of `Conv1D` → `BatchNorm` → `Dropout` blocks
+   * A final `GlobalAveragePooling1D` + Dense softmax
+   * Optimizer: Adam (LR 1e‑3 → 1e‑4), batch size 32 or 64
+
+2. **Profile performance**
+
+   * Is the model underfitting (both train/val loss high)?
+     → Increase capacity (more filters or deeper), or switch to LSTM/Transformer
+   * Is it overfitting (train accuracy ≫ val accuracy)?
+     → More dropout, data augmentation (e.g. slight time‑warping, noise injection), early stopping
+
+3. **Experiment with STFT + 2D‑CNN** if your 1D model plateaus (<70 % accuracy).
+
+   * Try a small FFT window (e.g. 32 samples) with 50 % overlap, generate a `(freq_bins, time_steps, 1)` image per sensor or stack sensors on the channel axis.
+
+4. **Augment / engineer features**
+
+   * Even with a deep model you can add a few hand‑crafted features (e.g. variance over last 10 s) as extra inputs concatenated before the Dense layers.
+
+5. **Analyze errors**
+
+   * Use a confusion matrix to see which classes (“entering” vs. “visiting”) are most confused, then refine labeling or balance your dataset.
+
+---
+
+### Key Takeaways
+
+* **1D‑CNNs/TCNs** often outperform plain RNNs on medium‑length sequences and train faster.
+* **STFT + 2D‑CNN** can work wonders if there’s a frequency signature to “entering” or “visiting.”
+* **Hand‑crafted features** + classical classifiers are great low‑data baselines and give interpretability.
+* Always monitor **confusion matrices**, adjust **data balance**, and **augment** where possible.
+
+Start with a lightweight 1D‑CNN/TCN pipeline, validate its performance, then layer in STFT or RNNs if you hit a wall. Good luck, and feel free to share your training curves or confusion matrix if you want more targeted tweaks!
