@@ -8,6 +8,24 @@ import tensorflow as tf
 
 
 def main():
+    """
+    Executes the full machine learning pipeline for RSSI-based presence detection.
+
+    This includes:
+      - Querying training and validation data from InfluxDB or loading from cache.
+      - Converting raw RSSI data to STFT-based spectrogram features.
+      - Generating frame-level labels for presence classification.
+      - Visualizing spectrograms for each sensor.
+      - Preparing framed data and labels for training.
+      - Removing ambiguous transition frames at rising/falling edges.
+      - Performing k-fold cross-validation training.
+      - Evaluating each model fold using confusion matrix plots.
+
+    Note:
+        Queries use the global configuration defined in `config.py`, including
+        sensor count, plotting ranges, and data time windows.
+    """
+
     data_query = f'''
     from(bucket: "{INFLUX_BUCKET}")
       |> range(start: {DATA_START}, stop: {DATA_STOP})

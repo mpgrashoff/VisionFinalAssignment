@@ -2,11 +2,18 @@ from keras import layers, models
 
 
 def build_model(input_shape):
-    """    Builds a CNN model for classification of spectrogram frames.
+    """
+    Builds a CNN model for classification of spectrogram frames.
+
+    This model consists of multiple convolutional blocks followed by dense layers,
+    designed to process spectrogram-like 2D input data for binary classification.
+
     Args:
-        input_shape (tuple): Shape of the input data (freq_bins, time_bins, channels).
+        input_shape (tuple): Shape of the input data in the format
+            (freq_bins, time_bins, channels).
+
     Returns:
-        keras.Model: Compiled CNN model.
+        keras.Model: A compiled Keras CNN model ready for training.
     """
 
     model = models.Sequential([

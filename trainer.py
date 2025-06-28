@@ -9,17 +9,22 @@ from config import *
 def train_kfold(data, labels, n_splits=5):
 
     """
-    Train the model using Stratified K-Fold cross-validation.
+    Trains a CNN model using Stratified K-Fold cross-validation.
+
+    For each fold, a new model is built, trained, and evaluated. The best model
+    weights (based on validation loss) are saved to disk.
 
     Args:
-      data       : np.array, shape (N, freq_bins, time_bins, channels)
-      labels     : 1D array of ints (0/1), shape (N,)
-      n_splits   : number of folds (default 5)
+        data (np.ndarray): Input feature array of shape (n_samples, freq_bins, time_bins, channels).
+        labels (np.ndarray): Binary classification labels of shape (n_samples,).
+        n_splits (int, optional): Number of K-Fold splits. Defaults to 5.
 
     Returns:
-      fold_models   : list of trained keras Models, one per fold
-      fold_histories: list of History objects, one per fold
+        Tuple[List[keras.Model], List[keras.callbacks.History]]:
+            - fold_models: List of trained Keras models, one per fold.
+            - fold_histories: List of Keras History objects containing training metrics.
     """
+
     skf = StratifiedKFold(
         n_splits=n_splits,
         shuffle=True,

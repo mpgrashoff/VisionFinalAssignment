@@ -4,8 +4,8 @@ import pandas as pd
 def classify_boolean_frame(series):
     """
     classifies the boolean series into one of the following classes:
-    - 0: no presence
-    - 1: full presence
+    - 0: absence
+    - 1: presence
     - 2: rising presence ie entering
     - 3: falling presence ie leaving
     - 4: both rising and falling presence ie entering and leaving
@@ -14,7 +14,7 @@ def classify_boolean_frame(series):
     using NPERSEG and OVERLAP from config.
 
     Args:
-        series : np.ndarray of bools with data rate of PULLIN_RATE
+        series : np.ndarray of bools with data rate of PULLING_RATE
 
     Returns:
         Int classification of the series:

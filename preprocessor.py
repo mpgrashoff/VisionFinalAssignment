@@ -8,15 +8,19 @@ from config import FRAME_TIME, NPERSEG, OVERLAP
 
 def generate_frames(spectrogram):
     """
-    Splits a full STFT spectrogram into frames of FRAME_TIME duration
-    using NPERSEG and OVERLAP from config.
+    Splits a full STFT spectrogram into fixed-duration frames.
+
+    Frames are generated along the time axis of the spectrogram using
+    parameters defined in config (FRAME_TIME, NPERSEG, OVERLAP).
 
     Args:
-        spectrogram : np.ndarray of shape (freq_bins, time_bins, channels)
+        spectrogram (np.ndarray): Spectrogram of shape (freq_bins, time_bins, channels).
 
     Returns:
-        np.ndarray: shape (n_frames, freq_bins, window_bins, channels)
+        np.ndarray: Array of shape (n_frames, freq_bins, window_bins, channels),
+                    where each frame corresponds to a fixed time window.
     """
+
     hop = NPERSEG - OVERLAP                   # seconds per STFT time bin
     window_bins = FRAME_TIME // hop           # how many STFT bins in one frame
     freq_bins, time_bins, channels = spectrogram.shape
@@ -33,14 +37,18 @@ def generate_frames(spectrogram):
 
 def generate_frame_labels(validation_data):
     """
-    Splits the validation data into time-based frames and classifies each frame.
+    Generates binary labels for each time frame based on presence data.
 
-    using DATA_START, FRAME_TIME and PULLING_RATE from config.
-    Parameters:
+    The validation data is split into frames of duration FRAME_TIME and
+    each frame is labeled using a boolean classification function.
+
+    Args:
         validation_data (pd.DataFrame): DataFrame with '_time' and 'Pressence' columns.
+
     Returns:
-        np.ndarray: Array of classified labels per frame.
+        np.ndarray: Array of shape (n_frames,) containing binary labels (0 or 1).
     """
+
     label_list = []
     frame_start = pd.to_datetime(DATA_START)
     frame_duration = pd.Timedelta(seconds=FRAME_TIME)
@@ -67,11 +75,36 @@ def generate_frame_labels(validation_data):
 
 
 def compute_stft(signal, fs=PULLING_RATE, nperseg=NPERSEG, noverlap=OVERLAP):
+    """
+    Computes the Short-Time Fourier Transform (STFT) magnitude of a 1D signal.
+
+    Args:
+        signal (np.ndarray): 1D time-series input signal.
+        fs (int, optional): Sampling rate in Hz. Defaults to PULLING_RATE.
+        nperseg (int, optional): Length of each segment for STFT. Defaults to NPERSEG.
+        noverlap (int, optional): Number of overlapping samples. Defaults to OVERLAP.
+
+    Returns:
+        np.ndarray: 2D STFT magnitude array of shape (freq_bins, time_bins).
+    """
     f, t, zxx = stft(signal, fs=fs, nperseg=nperseg, noverlap=noverlap)
     return np.abs(zxx)  # magnitude only
 
 
 def generate_stft_features(raw_data):
+    """
+    Converts raw RSSI data into a 3-channel STFT spectrogram image.
+
+    Applies STFT to each sensor's time-series signal and stacks the
+    resulting spectrograms along the channel axis.
+
+    Args:
+        raw_data (pd.DataFrame): DataFrame with 'device', 'RSSI', and '_time' columns.
+
+    Returns:
+        np.ndarray: Spectrogram image of shape (freq_bins, time_bins, SENSOR_COUNT).
+    """
+
     spectrograms = []
     sensors = raw_data['device'].unique()
     if len(sensors) != SENSOR_COUNT:
@@ -94,15 +127,19 @@ def generate_stft_features(raw_data):
 
 def remove_rising_falling_edge_frames(frames, frame_labels):
     """
-    Remove frames with rising or falling edges in the labels.
+    Filters out frames that lie on rising or falling edges of presence transitions.
+
+    Only retains frames whose labels are stable across the previous and next frame,
+    to avoid transitional ambiguity.
 
     Args:
-        frames (np.ndarray): Shape (n_frames, freq_bins, window_bins, channels)
-        frame_labels (np.ndarray): Shape (n_frames,)
+        frames (np.ndarray): Array of frames, shape (n_frames, freq_bins, window_bins, channels).
+        frame_labels (np.ndarray): Array of frame labels, shape (n_frames,).
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: Filtered frames and their labels.
+        Tuple[np.ndarray, np.ndarray]: Filtered frames and corresponding labels.
     """
+
     filtered_frames = []
     filtered_labels = []
 

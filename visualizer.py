@@ -6,6 +6,13 @@ from config import *
 
 
 def plot_history(history):
+    """
+    Plots training loss and accuracy over epochs.
+
+    Args:
+        history (keras.callbacks.History): History object returned by model.fit().
+    """
+
     epochs = range(1, len(history.history['loss']) + 1)
     plt.figure()
     plt.plot(epochs, history.history['loss'], 'bo', label='Training loss')
@@ -25,19 +32,20 @@ def plot_history(history):
 
 
 def plot_spectrogram(spectrogram, control_df, max_freq_bin=60, time_start=0, time_end=None,
-                                   sensor_index=0, sensors=['RSS_A', 'RSS_B', 'RSS_C']):
+                     sensor_index=0, sensors=['RSS_A', 'RSS_B', 'RSS_C']):
     """
-    Plot the cropped STFT spectrogram for one sensor, overlaid with a control signal.
-    USING: NPERSEG and OVERLAP from config.py to compute time bins.
+    Plots an STFT spectrogram for a selected sensor, overlaid with the presence signal.
+
     Args:
-        spectrogram: np.ndarray of shape (freq_bins, time_bins, channels)
-        control_signal: list or 1D np.ndarray of bool/int (0/1), sampled at 1 Hz
-        max_freq_bin: int, upper limit of frequency bins to display
-        time_start: int, starting time bin to plot
-        time_end: int, ending time bin to plot
-        sensor_index: int, which sensor/channel to show
-        sensors: list of sensor names for labeling
+        spectrogram (np.ndarray): Array of shape (freq_bins, time_bins, channels).
+        control_df (pd.DataFrame): DataFrame containing '_time' and 'Pressence' columns.
+        max_freq_bin (int): Upper frequency bin limit to plot. Defaults to 60.
+        time_start (int): Starting time bin index for the plot.
+        time_end (int or None): Ending time bin index. If None, plots to end.
+        sensor_index (int): Index of the sensor/channel to plot.
+        sensors (List[str]): List of sensor names for labeling purposes.
     """
+
     if spectrogram.ndim != 3:
         raise ValueError("Unexpected spectrogram shape.")
 
