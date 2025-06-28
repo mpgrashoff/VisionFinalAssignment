@@ -61,3 +61,15 @@ Configure parameters in `config.py` such as:
 
 ```bash
 python main.py
+```
+
+---
+## 📚 Dependencies
+- Python 3.8+
+- pandas
+- numpy
+- scipy
+- influxdb-client
+- tensorflow / keras
+- scikit-learn
+- matplotlib
