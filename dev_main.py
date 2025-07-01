@@ -53,17 +53,17 @@ def main():
     print(os.environ['PATH'])  # confirms PATH inclusion for debugging
     print(f"gpu: {tf.config.list_physical_devices('GPU')}")
 
-    raw_data = load_data_from_influx(DATA_CACHE_FILE, data_query)
-    validation_data = load_data_from_influx(VALIDATION_CACHE_FILE, val_query)
+    raw_data = load_data_from_influx(data_query, DATA_CACHE_FILE)
+    validation_data = load_data_from_influx(val_query, VALIDATION_CACHE_FILE)
     raw_data['_time'] = pd.to_datetime(raw_data['_time'])
     validation_data['_time'] = pd.to_datetime(validation_data['_time'])
 
     # --- feature generation & framing ---
     full_spec = generate_stft_features(raw_data)
 
-    for i in range(SENSOR_COUNT):
-        plot_spectrogram(full_spec, validation_data, max_freq_bin=8,
-                         time_start=PLOT_START_TIME, time_end=PLOT_END_TIME, sensor_index=i)
+    # for i in range(SENSOR_COUNT):
+    #     plot_spectrogram(full_spec, validation_data, max_freq_bin=8,
+    #                      time_start=PLOT_START_TIME, time_end=PLOT_END_TIME, sensor_index=i)
 
     labels = generate_frame_labels(validation_data)
     frames = generate_frames(full_spec)

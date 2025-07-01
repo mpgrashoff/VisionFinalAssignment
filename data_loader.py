@@ -4,7 +4,7 @@ from influxdb_client import InfluxDBClient
 from config import *
 
 
-def load_data_from_influx(file_name, query):
+def load_data_from_influx( query, file_name=None):
     """
     Loads data from InfluxDB or from a cached CSV file if it exists.
 

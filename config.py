@@ -36,8 +36,8 @@ OVERLAP = 10   # Number of overlapping samples between segments
 # ─────────────────────────────────────────────────────────────────────────────
 EPOCHS = 300
 BATCH_SIZE = 32
-PATIENCE = 80       # Early stopping patience
-FOLDS = 15          # Number of cross-validation folds
+PATIENCE = 20       # Early stopping patience
+FOLDS = 2          # Number of cross-validation folds
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Visualization Parameters

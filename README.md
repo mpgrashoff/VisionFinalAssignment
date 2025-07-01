@@ -60,7 +60,7 @@ Configure parameters in `config.py` such as:
 2. Run the main pipeline:
 
 ```bash
-python main.py
+python dev_main.py
 ```
 
 ---
