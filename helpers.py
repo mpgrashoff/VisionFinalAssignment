@@ -10,9 +10,6 @@ def classify_boolean_frame(series):
     - 3: falling presence ie leaving
     - 4: both rising and falling presence ie entering and leaving
     - -1: unknown state (should not happen)
-
-    using NPERSEG and OVERLAP from config.
-
     Args:
         series : np.ndarray of bools with data rate of PULLING_RATE
 
