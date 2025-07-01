@@ -61,9 +61,9 @@ def main():
     # --- feature generation & framing ---
     full_spec = generate_stft_features(raw_data)
 
-    # for i in range(SENSOR_COUNT):
-    #     plot_spectrogram(full_spec, validation_data, max_freq_bin=8,
-    #                      time_start=PLOT_START_TIME, time_end=PLOT_END_TIME, sensor_index=i)
+    for i in range(SENSOR_COUNT):
+        plot_spectrogram(full_spec, validation_data, max_freq_bin=8,
+                         time_start=PLOT_START_TIME, time_end=PLOT_END_TIME, sensor_index=i)
 
     labels = generate_frame_labels(validation_data)
     frames = generate_frames(full_spec)
@@ -77,7 +77,7 @@ def main():
     models, histories = train_kfold(frames, labels, n_splits=FOLDS)
 
     # --- plot learning curves for each fold ---
-    # plot_kfold_history(histories)
+    plot_kfold_history(histories)
 
     # --- evaluate each fold model on the full dataset (or test split) ---
     for idx, model in enumerate(models, start=1):

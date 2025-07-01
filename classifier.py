@@ -46,9 +46,9 @@ def build_model(input_shape):
 
         # Dense Head
         layers.Dense(256, activation='relu'),
-        layers.Dropout(0.3),
+        layers.Dropout(0.2),
         layers.Dense(128, activation='relu'),
-        layers.Dropout(0.3),
+        layers.Dropout(0.2),
         layers.Dense(2, activation='sigmoid')
     ])
     # binary classification

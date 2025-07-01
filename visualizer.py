@@ -165,37 +165,65 @@ def plot_roc_pr_curves(model, X, y_true):
         X (np.array): Input data.
         y_true (np.array): True integer labels (0 through n_classes-1).
     """
-    # Predict class probabilities
-    y_prob = model.predict(X)  # shape (n_samples, n_classes)
+    y_prob = model.predict(X)  # shape: (n_samples,) or (n_samples, n_classes)
+    y_prob = np.atleast_2d(y_prob)
+    if y_prob.shape[0] == 1 and y_prob.shape[1] != len(y_true):
+        y_prob = y_prob.T
+
     n_classes = y_prob.shape[1]
 
-    # Binarize the true labels for one-vs-rest metrics
-    y_true_bin = label_binarize(y_true, classes=list(range(n_classes)))
-
-    # ROC curve and AUC for each class
-    plt.figure()
-    for i in range(n_classes):
-        fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_prob[:, i])
+    if n_classes == 1:
+        # Binary case
+        y_score = y_prob.ravel()
+        fpr, tpr, _ = roc_curve(y_true, y_score)
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, label=f'Class {i} (AUC = {roc_auc:.2f})')
-    plt.plot([0, 1], [0, 1], 'k--', label='Random')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Multi-class ROC Curves')
-    plt.legend(loc='lower right')
-    plt.tight_layout()
-    plt.show()
 
-    # Precision-Recall curve and AUC for each class
-    plt.figure()
-    for i in range(n_classes):
-        precision, recall, _ = precision_recall_curve(y_true_bin[:, i], y_prob[:, i])
+        plt.figure()
+        plt.plot(fpr, tpr, label=f'Binary ROC (AUC = {roc_auc:.2f})')
+        plt.plot([0, 1], [0, 1], 'k--')
+        plt.xlabel('FPR');
+        plt.ylabel('TPR')
+        plt.title('Binary ROC Curve')
+        plt.legend()
+        plt.show()
+
+        precision, recall, _ = precision_recall_curve(y_true, y_score)
         pr_auc = auc(recall, precision)
-        plt.plot(recall, precision, label=f'Class {i} (AUC = {pr_auc:.2f})')
-    plt.xlabel('Recall')
-    plt.ylabel('Precision')
-    plt.title('Multi-class Precision-Recall Curves')
-    plt.legend(loc='lower left')
-    plt.tight_layout()
-    plt.show()
+
+        plt.figure()
+        plt.plot(recall, precision, label=f'Binary PR (AUC = {pr_auc:.2f})')
+        plt.xlabel('Recall');
+        plt.ylabel('Precision')
+        plt.title('Binary Precision–Recall')
+        plt.legend()
+        plt.show()
+    else:
+        # Multi-class case (OvR)
+        y_true_bin = label_binarize(y_true, classes=list(range(n_classes)))
+        fpr, tpr, precision, recall = {}, {}, {}, {}
+
+        plt.figure()
+        for i in range(n_classes):
+            fpr[i], tpr[i], _ = roc_curve(y_true_bin[:, i], y_prob[:, i])
+            roc_auc = auc(fpr[i], tpr[i])
+            plt.plot(fpr[i], tpr[i], label=f'Class {i} (AUC={roc_auc:.2f})')
+        plt.plot([0, 1], [0, 1], 'k--', label='Random')
+        plt.xlabel('FPR');
+        plt.ylabel('TPR')
+        plt.title('Multi-class ROC Curves')
+        plt.legend(loc='lower right')
+        plt.tight_layout()
+        plt.show()
+
+        plt.figure()
+        for i in range(n_classes):
+            precision[i], recall[i], _ = precision_recall_curve(y_true_bin[:, i], y_prob[:, i])
+            pr_auc = auc(recall[i], precision[i])
+            plt.plot(recall[i], precision[i], label=f'Class {i} (AUC={pr_auc:.2f})')
+        plt.xlabel('Recall');
+        plt.ylabel('Precision')
+        plt.title('Multi-class Precision–Recall')
+        plt.legend(loc='lower left')
+        plt.tight_layout()
+        plt.show()
 
